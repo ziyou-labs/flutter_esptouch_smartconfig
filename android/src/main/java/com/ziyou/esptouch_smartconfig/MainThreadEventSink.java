@@ -19,6 +19,7 @@ import java.util.Map;
 
 import io.flutter.plugin.common.EventChannel;
 
+//TODO: Revalidate this file
 public class MainThreadEventSink implements EventChannel.EventSink {
     private EventChannel.EventSink eventSink;
     private Handler handler;
@@ -56,5 +57,10 @@ public class MainThreadEventSink implements EventChannel.EventSink {
                 eventSink.endOfStream();
             }
         });
+    }
+
+    void dispose() {
+        eventSink = null;
+        handler = null;
     }
 }

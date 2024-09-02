@@ -48,8 +48,8 @@ private static final String TAG = "EspTouchAsyncTask";
     private IEsptouchTask mEsptouchTask;
     MainThreadEventSink eventSink;
     EsptouchAsyncTask( Context context, MainThreadEventSink eventSink) {
-    this.context = context;
-    this.eventSink = eventSink;
+        this.context = context;
+        this.eventSink = eventSink;
     }
 
     void cancelEsptouch() {
@@ -90,6 +90,7 @@ private static final String TAG = "EspTouchAsyncTask";
         }
         return mEsptouchTask.executeForResults(taskResultCount);
     }
+    
     @Override
     protected void onProgressUpdate(IEsptouchResult... values){
         IEsptouchResult result = values[0];
@@ -100,7 +101,6 @@ private static final String TAG = "EspTouchAsyncTask";
         sink.put("ip", result.getInetAddress().getHostAddress());
         eventSink.success(sink);
     }
-
 
     @Override
     protected void onPostExecute(List<IEsptouchResult> result) {

@@ -48,15 +48,12 @@ public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
     private static final String CHANNEL_NAME= "esptouch_smartconfig";
 
     private final Context context;
-    final EventChannel eventChannel;
 
     private MainThreadEventSink eventSink;
     private EsptouchAsyncTask esptouchAsyncTask;
 
-    FlutterEventChannelHandler(Context context, EventChannel eventChannel) {
+    FlutterEventChannelHandler(Context context) {
         this.context = context;
-        this.eventChannel = eventChannel;
-        eventChannel.setStreamHandler(this);
     }
 
     @Override
@@ -71,6 +68,10 @@ public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
         String broadcast = (String) map.get("isBroad");
 
         Log.d(TAG, String.format("Received stream configuration arguments: SSID: %s, BBSID: %s, Password: %s", ssid, bssid, password));
+        
+        if(esptouchAsyncTask != null) {
+            esptouchAsyncTask.cancelEsptouch();
+        }
         this.eventSink = new MainThreadEventSink(eventSink);
         esptouchAsyncTask = new EsptouchAsyncTask(context, this.eventSink);
         esptouchAsyncTask.execute(ssid, bssid, password, deviceCount, broadcast);
@@ -79,6 +80,9 @@ public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
     @Override
     public void onCancel(Object o) {
         Log.d(TAG, "Cancelling stream with configuration arguments" + o);
+        this.eventSink.dispose();
+        this.eventSink = null;
         esptouchAsyncTask.cancelEsptouch();
+        esptouchAsyncTask = null;
     }
 }

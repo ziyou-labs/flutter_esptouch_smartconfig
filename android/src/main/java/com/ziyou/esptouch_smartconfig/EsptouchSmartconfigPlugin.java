@@ -56,13 +56,15 @@ public class EsptouchSmartconfigPlugin implements FlutterPlugin {
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
         if (eventChannel != null) {
             eventChannel.setStreamHandler(null);
+            eventChannel = null;
         }
     }
 
     private void setupChannels(BinaryMessenger messenger, Context context) {
         eventChannel = new EventChannel(messenger,TAG);
         FlutterEventChannelHandler flutterEventChannelHandler =
-                new FlutterEventChannelHandler(context, eventChannel);
+                new FlutterEventChannelHandler(context);
+        eventChannel.setStreamHandler(flutterEventChannelHandler);
     }
 }
 
