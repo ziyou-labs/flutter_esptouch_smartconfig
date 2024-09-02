@@ -50,6 +50,7 @@ public class __EsptouchTask implements __IEsptouchTask {
 
     public __EsptouchTask(Context context, TouchData apSsid, TouchData apBssid, TouchData apPassword,
                           ITouchEncryptor encryptor, IEsptouchTaskParameter parameter) {
+        Log.i(TAG, "Welcome Esptouch " + IEsptouchTask.ESPTOUCH_VERSION);
         mContext = context;
         mEncryptor = encryptor;
         mApSsid = apSsid.getData();
