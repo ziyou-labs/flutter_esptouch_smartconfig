@@ -39,13 +39,9 @@ import com.espressif.iot.esptouch.IEsptouchTask;
 import com.espressif.iot.esptouch.util.ByteUtil;
 import com.espressif.iot.esptouch.util.TouchNetUtil;
 
-
-/**
- * EsptouchSmartconfigPlugin
- */
 public class EsptouchSmartconfigPlugin implements FlutterPlugin {
     private EventChannel eventChannel;
-    private static final String TAG = "esptouch_smartconfig";
+    private static final String eventChannelTag = "esptouch_smartconfig";
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding flutterPluginBinding) {
@@ -61,7 +57,7 @@ public class EsptouchSmartconfigPlugin implements FlutterPlugin {
     }
 
     private void setupChannels(BinaryMessenger messenger, Context context) {
-        eventChannel = new EventChannel(messenger,TAG);
+        eventChannel = new EventChannel(messenger,eventChannelTag);
         FlutterEventChannelHandler flutterEventChannelHandler =
                 new FlutterEventChannelHandler(context);
         eventChannel.setStreamHandler(flutterEventChannelHandler);

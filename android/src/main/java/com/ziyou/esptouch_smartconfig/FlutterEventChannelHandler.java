@@ -44,8 +44,7 @@ import com.espressif.iot.esptouch.util.ByteUtil;
 import com.espressif.iot.esptouch.util.TouchNetUtil;
 
 public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
-    private static final String TAG = "ESPTouchSmartConfig";
-    private static final String CHANNEL_NAME= "esptouch_smartconfig";
+    private static final String TAG = "ESPTouchSmartConfig#FlutterEventChannelHandler";
 
     private final Context context;
 
@@ -70,7 +69,7 @@ public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
         Log.d(TAG, String.format("Received stream configuration arguments: SSID: %s, BBSID: %s, Password: %s", ssid, bssid, password));
         
         if(esptouchAsyncTask != null) {
-            esptouchAsyncTask.cancelEsptouch();
+            esptouchAsyncTask.cancel();
         }
         this.eventSink = new MainThreadEventSink(eventSink);
         esptouchAsyncTask = new EsptouchAsyncTask(context, this.eventSink);
@@ -80,9 +79,9 @@ public class FlutterEventChannelHandler implements EventChannel.StreamHandler {
     @Override
     public void onCancel(Object o) {
         Log.d(TAG, "Cancelling stream with configuration arguments" + o);
+        esptouchAsyncTask.cancel();
+        esptouchAsyncTask = null;
         this.eventSink.dispose();
         this.eventSink = null;
-        esptouchAsyncTask.cancelEsptouch();
-        esptouchAsyncTask = null;
     }
 }

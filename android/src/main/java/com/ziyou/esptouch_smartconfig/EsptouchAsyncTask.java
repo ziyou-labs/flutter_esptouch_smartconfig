@@ -42,7 +42,7 @@ import com.espressif.iot.esptouch.util.ByteUtil;
 import com.espressif.iot.esptouch.util.TouchNetUtil;
 
 public class EsptouchAsyncTask extends AsyncTask<String, IEsptouchResult, List<IEsptouchResult>> {
-private static final String TAG = "EspTouchAsyncTask";
+    private static final String TAG = "ESPTouchSmartConfig#EsptouchAsyncTask";
     private final Object mLock = new Object();
     private Context context;
     private IEsptouchTask mEsptouchTask;
@@ -52,10 +52,13 @@ private static final String TAG = "EspTouchAsyncTask";
         this.eventSink = eventSink;
     }
 
-    void cancelEsptouch() {
+    void cancel() {
         cancel(true);
         if (mEsptouchTask != null) {
             mEsptouchTask.interrupt();
+        }
+        if(eventSink != null) {
+            eventSink.endOfStream();
         }
     }
 
@@ -76,7 +79,6 @@ private static final String TAG = "EspTouchAsyncTask";
             String broadcastData = params[4];
             Log.d(TAG, String.format("Received stream configuration arguments: SSID: %s, BBSID: %s, Password: %s, $s, $s", apSsid, apBssid, apPassword,deviceCountData,broadcastData));
             if (broadcastData.equals("YES")) broadcast = true;
-
             taskResultCount = deviceCountData.length() == 0 ? -1 : Integer.parseInt(deviceCountData);
             mEsptouchTask = new EsptouchTask(apSsid, apBssid, apPassword, context);
             mEsptouchTask.setPackageBroadcast(broadcast);
@@ -94,37 +96,50 @@ private static final String TAG = "EspTouchAsyncTask";
     @Override
     protected void onProgressUpdate(IEsptouchResult... values){
         IEsptouchResult result = values[0];
-        Log.d(TAG, "value" + values.length);
-        Log.d(TAG, result.toString());
-        Map<String, String> sink = new HashMap<>();
-        sink.put("bssid", result.getBssid());
-        sink.put("ip", result.getInetAddress().getHostAddress());
-        eventSink.success(sink);
+        Log.d(TAG, "Received progress update length" + values.length);
+        for (IEsptouchResult touchResult : values) {
+            Log.d(TAG, "Received progress update data");
+            Log.d(TAG, "Is success : " + touchResult.isSuc());
+            Log.d(TAG, "Is cancelled : " + touchResult.isCancelled());
+            Log.d(TAG, "BSSID : " + touchResult.getBssid());
+            Log.d(TAG, "IP : " + touchResult.getInetAddress().getHostAddress());
+        }
+        //Map<String, String> sink = new HashMap<>();
+        //sink.put("bssid", result.getBssid());
+        //sink.put("ip", result.getInetAddress().getHostAddress());
+        //eventSink.success(sink);
     }
 
     @Override
     protected void onPostExecute(List<IEsptouchResult> result) {
-        if (result != null) {
+        if (result == null || result.size() == 0) {
+            Log.d(TAG, "Received null or empty result in post execute");
             eventSink.endOfStream();
             return;
         }
-
         Log.d(TAG, "End value" + result.size());
         Log.d(TAG, "End data : " + result.get(result.size()-1).toString());
         IEsptouchResult firstResult = result.get(result.size()-1);
         if (firstResult.isCancelled()) {
+            Log.d(TAG, "First result is cancelled");
             eventSink.endOfStream();
             return;
         }
         if (!firstResult.isSuc()){
+            Log.d(TAG, "First result is not successful");
             eventSink.endOfStream();
             return;
         }
-
-        Map<String, String> sink = new HashMap<>();
-        sink.put("bssid", result.get(result.size()-1).getBssid());
-        sink.put("ip", result.get(result.size()-1).getInetAddress().getHostAddress());
-        eventSink.success(sink);
+        for (IEsptouchResult touchResult : result) {
+            if(!touchResult.isSuc() || touchResult.isCancelled()) {
+                Log.d(TAG, "Touch result is not successful or is cancelled, ignoring");
+                continue;
+            }
+            Map<String, String> sink = new HashMap<>();
+            sink.put("bssid", touchResult.getBssid());
+            sink.put("ip", touchResult.getInetAddress().getHostAddress());
+            eventSink.success(sink);
+        }
         eventSink.endOfStream();
     }
 }
